@@ -6,6 +6,34 @@ from objects import Object
 from zone import Zone
 from renderer import Renderer
 
+class Fov:
+	"""Fov map wrapper"""	
+	def __init__(self, algo, light_walls, light_radius):
+		
+		self.light_radius = light_radius
+		self.light_walls = light_walls
+		self.algo = algo
+		
+		# make an empty fov map for zone
+		self.map = None
+
+	#def __getitem__(self):
+	#	if self.map is None
+	#		logger.error("Fov: map is empty!")
+	#	return self.map
+
+	def read_zone(self, zone):
+		"""Read the zone and adjust map values accordingly"""
+		self.map = libtcod.map_new(zone.width, zone.height)
+		for y in range(zone.height):
+			for x in range(zone.width):
+				#libtcode requires the opposite values, so invert them!
+				libtcod.map_set_properties(self.map, x, y, not zone[x][y].block_sight, not zone[x][y].blocked)
+
+	def recompute(self, x, y):
+		"""Compute fov for position"""
+		libtcod.map_compute_fov(self.map, x, y, self.light_radius, self.light_walls, self.algo)
+
 def handle_keys():
 	"""handle input from the main loop"""
 	#key = libtcod.console_check_for_keypress()
@@ -55,12 +83,7 @@ def handle_keys():
 
 	elif libtcod.console_is_key_pressed(libtcod.KEY_KP3):
 		player.move(1, 1)
-		logger.log("player moved to " + str((player.x, player.y)))
-
-def recompute_fov():
-	"""Recompute the fov map"""
-	libtcod.map_compute_fov(fov_map, player.x, player.y, FOV_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
-
+		logger.log("player moved to " + str((player.x, player.y)))	
 
 # init and run the stuff
 
@@ -72,12 +95,6 @@ SCREEN_HEIGHT = 50
 
 COLOR_PLAYER = libtcod.white
 COLOR_NPC = libtcod.yellow
-
-# fov constants
-
-FOV_ALGO = 0  #default FOV algorithm
-FOV_LIGHT_WALLS = True
-FOV_RADIUS = 10
 
 # turn on fps limit
 libtcod.sys_set_fps(LIMIT_FPS)
@@ -98,13 +115,9 @@ zone = Zone()
 zone.roomer(max_rooms=30)
 
 # init fov
-fov_map = libtcod.map_new(zone.width, zone.height)
-
-for y in range(zone.height):
-	for x in range(zone.width):
-		#libtcode requires the opposite values, so invert them!
-		libtcod.map_set_properties(fov_map, x, y, not zone[x][y].block_sight, not zone[x][y].blocked)
-
+fov = Fov(algo=0, light_walls=True, light_radius=10)
+# load zone information
+fov.read_zone(zone)
 
 # init objects in the zone
 
@@ -120,11 +133,12 @@ objects = [npc, player]
 
 # the main loop
 while not libtcod.console_is_window_closed():
-	recompute_fov()
+	# recompute fov for player position
+	fov.recompute(player.x, player.y)
 	# render and explore the zone
-	renderer.process_zone(zone, fov_map)
+	renderer.process_zone(zone, fov.map)
 	# render all objects in the zone
-	renderer.render_objects(objects, fov_map)
+	renderer.render_objects(objects, fov.map)
 	# blit out drawing buffer
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 	# flush the console

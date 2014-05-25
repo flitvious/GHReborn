@@ -14,4 +14,4 @@ def error(message):
 	"""Error log"""
 	if VERBOSITY_ERROR:
 		str(message)
-		print "DEBUG: " + message
+		print "ERROR: " + message
