@@ -4,6 +4,7 @@ import libtcodpy as libtcod
 import logger
 from gobject import Object
 from zone import Zone
+from renderer import Renderer
 
 def handle_keys():
 	"""handle input from the main loop"""
@@ -61,39 +62,6 @@ def recompute_fov():
 	libtcod.map_compute_fov(fov_map, player.x, player.y, FOV_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
 
 
-def render_all():
-	"""render all objects and a map"""
-	for gobject in objects:
-		gobject.draw(con, fov_map)
-
-	for y in range(zone.height):
-		
-		for x in range(zone.width):
-			
-			lit = libtcod.map_is_in_fov(fov_map, x, y)
-			wall = zone[x][y].block_sight
-			
-			if not lit:
-				#it's out of the player's FOV
-				#if it's not visible right now, the player can only see it if it's explored
-				if zone[x][y].explored:
-					if wall:
-						libtcod.console_set_char_background(con, x, y, COLOR_WALL_DARK, libtcod.BKGND_SET)
-					else:
-						libtcod.console_set_char_background(con, x, y, COLOR_GROUND_DARK, libtcod.BKGND_SET)
-			else:
-				#it is inside the player's fov
-				if wall:
-					libtcod.console_set_char_background(con, x, y, COLOR_WALL_LIT, libtcod.BKGND_SET)
-				else:
-					libtcod.console_set_char_background(con, x, y, COLOR_GROUND_LIT, libtcod.BKGND_SET)
-				# explore the tile
-				if not zone[x][y].explored:
-					zone[x][y].explored = True
-
-	# blit out drawing buffer
-	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
-
 # init and run the stuff
 
 # constants
@@ -102,12 +70,6 @@ LIMIT_FPS = 20
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
 
-#color constants
-
-COLOR_WALL_DARK = libtcod.Color(0, 0, 100)
-COLOR_WALL_LIT = libtcod.Color(130, 110, 50)
-COLOR_GROUND_DARK = libtcod.Color(50, 50, 150)
-COLOR_GROUND_LIT = libtcod.Color(200, 180, 50)
 COLOR_PLAYER = libtcod.white
 COLOR_NPC = libtcod.yellow
 
@@ -117,7 +79,6 @@ FOV_ALGO = 0  #default FOV algorithm
 FOV_LIGHT_WALLS = True
 FOV_RADIUS = 10
 
-
 # turn on fps limit
 libtcod.sys_set_fps(LIMIT_FPS)
 # import font
@@ -126,13 +87,15 @@ libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | 
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'Ghreborn', False)
 # primary console
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
+# init renderer
+renderer = Renderer(con)
+
 
 # init the map
 # these should be color constants, then
 zone = Zone()
 # will be just one room for now
 zone.roomer(max_rooms=30)
-
 
 # init fov
 fov_map = libtcod.map_new(zone.width, zone.height)
@@ -149,19 +112,25 @@ player = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', COLOR_PLAYER, zone)
 # player to any non-blocked tile
 player.x, player.y = zone.random_valid_coords()
 
-npc = Object(SCREEN_WIDTH/2 - 5, SCREEN_HEIGHT/2, '@', COLOR_NPC, zone)
+npc = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', COLOR_NPC, zone)
+# put npc somewhere
+npc.x, npc.y = zone.random_valid_coords()
 
 objects = [npc, player]
 
 # the main loop
 while not libtcod.console_is_window_closed():
 	recompute_fov()
-	render_all()
+	# render and explore the zone
+	renderer.process_zone(zone, fov_map)
+	# render all objects in the zone
+	renderer.render_objects(objects, fov_map)
+	# blit out drawing buffer
+	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+	# flush the console
 	libtcod.console_flush()
 
-	# clear all objects
-	for gobject in objects:
-		gobject.clear(con)
+	renderer.clear_objects(objects)
 	
 	#handle keys and exit game if needed
 	exit = handle_keys()
