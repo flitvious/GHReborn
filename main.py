@@ -17,7 +17,6 @@ def handle_keys():
 	elif key.vk == libtcod.KEY_ESCAPE:
 		return True  #exit game
 
-
 	# cheats/debug
 	
 	elif key.vk == libtcod.KEY_1 and key.lctrl:
@@ -76,16 +75,21 @@ def render_all():
 			
 			if not lit:
 				#it's out of the player's FOV
-				if wall:
-					libtcod.console_set_char_background(con, x, y, COLOR_WALL_DARK, libtcod.BKGND_SET)
-				else:
-					libtcod.console_set_char_background(con, x, y, COLOR_GROUND_DARK, libtcod.BKGND_SET)
+				#if it's not visible right now, the player can only see it if it's explored
+				if zone[x][y].explored:
+					if wall:
+						libtcod.console_set_char_background(con, x, y, COLOR_WALL_DARK, libtcod.BKGND_SET)
+					else:
+						libtcod.console_set_char_background(con, x, y, COLOR_GROUND_DARK, libtcod.BKGND_SET)
 			else:
 				#it is inside the player's fov
 				if wall:
 					libtcod.console_set_char_background(con, x, y, COLOR_WALL_LIT, libtcod.BKGND_SET)
 				else:
 					libtcod.console_set_char_background(con, x, y, COLOR_GROUND_LIT, libtcod.BKGND_SET)
+				# explore the tile
+				if not zone[x][y].explored:
+					zone[x][y].explored = True
 
 	# blit out drawing buffer
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
