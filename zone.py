@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import logger
+from objects import Object
 
 class Tile:
 	"""a tile of the map and its properties"""
@@ -45,6 +46,7 @@ class Zone:
 		self.height = height
 		#map starts with all tiles "blocked"
 		self.cells = [[Tile(blocked=True) for y in range(self.height)] for x in range(self.width)]
+		self.objects = []
 
 	def __getitem__(self, index):
 		"""
@@ -54,6 +56,20 @@ class Zone:
 		# zone[x][y] means zone.__getitem__(x).__getitem__(y) which does the trick
 		return self.cells[index]
 
+	def add_object(self, char, color, x=None, y=None):
+		""" Add an object to the zone's list of objects"""
+		
+		# if both coords aren't set, use random
+		if x is None or y is None:
+			x, y = self.random_valid_coords()
+
+		new_object = Object(char, color, x, y)
+		new_object.set_zone(self)
+		self.objects.append(new_object)
+
+		#objects[-1] - last added 
+		return new_object
+	
 	def random_valid_coords(self, max_tries=50):
 		"""Tries to return a random non-blocked tile inside the zone. If it fails, it returns the first non-blocked tile it finds"""
 		for r in range(max_tries):

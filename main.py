@@ -121,15 +121,10 @@ fov.read_zone(zone)
 
 # init objects in the zone
 
-player = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', COLOR_PLAYER, zone)
-# player to any non-blocked tile
-player.x, player.y = zone.random_valid_coords()
-
-npc = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', COLOR_NPC, zone)
-# put npc somewhere
-npc.x, npc.y = zone.random_valid_coords()
-
-objects = [npc, player]
+# player to random coords
+player = zone.add_object('@', COLOR_PLAYER)
+# npc to random coords
+npc = zone.add_object('@', COLOR_NPC)
 
 # the main loop
 while not libtcod.console_is_window_closed():
@@ -138,13 +133,13 @@ while not libtcod.console_is_window_closed():
 	# render and explore the zone
 	renderer.process_zone(zone, fov.map)
 	# render all objects in the zone
-	renderer.render_objects(objects, fov.map)
+	renderer.render_objects(zone.objects, fov.map)
 	# blit out drawing buffer
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 	# flush the console
 	libtcod.console_flush()
 
-	renderer.clear_objects(objects)
+	renderer.clear_objects(zone.objects)
 	
 	#handle keys and exit game if needed
 	exit = handle_keys()
