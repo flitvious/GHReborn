@@ -2,13 +2,11 @@ import libtcodpy as libtcod
 
 class Object:
 	"""    this is a generic object: the player, a monster, an item, the stairs... it's always represented by a character on screen. """
-	def __init__(self, x, y, char, color, con, zone):
+	def __init__(self, x, y, char, color, zone):
 		self.x = x
 		self.y = y
 		self.char = char
 		self.color = color
-		# console this object will be rendered to
-		self.con = con
 		# zone this object belongs to (this should just be an app class reference!)
 		self.zone = zone
 
@@ -20,11 +18,13 @@ class Object:
 			self.x += dx
 			self.y += dy
 
-	def draw(self):
+	def draw(self, con, fov_map):
 		"""set the color and then draw the character that represents this object at its position"""
-		libtcod.console_set_default_foreground(self.con, self.color)
-		libtcod.console_put_char(self.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+		# ahhh, move this out.... this is a part of the rendering, not game logic.
+		if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+			libtcod.console_set_default_foreground(con, self.color)
+			libtcod.console_put_char(con, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
-	def clear(self):
+	def clear(self, con):
 		"""erase the character that represents this object"""
-		libtcod.console_put_char(self.con, self.x, self.y, ' ', libtcod.BKGND_NONE)
+		libtcod.console_put_char(con, self.x, self.y, ' ', libtcod.BKGND_NONE)

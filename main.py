@@ -17,10 +17,12 @@ def handle_keys():
 	elif key.vk == libtcod.KEY_ESCAPE:
 		return True  #exit game
 
-	elif key.vk == libtcod.KEY_1 and key.lctrl:
+
 	# cheats/debug
+	
+	elif key.vk == libtcod.KEY_1 and key.lctrl:
 		logger.log("teleporting randomly")
-		player.x, player.y = zone.random_valid_coords()
+		player.x, player.y = zone.random_valid_coords() 
 
 	#player movement
 	if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
@@ -55,21 +57,35 @@ def handle_keys():
 		player.move(1, 1)
 		logger.log("player moved to " + str((player.x, player.y)))
 
+def recompute_fov():
+	"""Recompute the fov map"""
+	libtcod.map_compute_fov(fov_map, player.x, player.y, FOV_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+
+
 def render_all():
 	"""render all objects and a map"""
 	for gobject in objects:
-		gobject.draw()
+		gobject.draw(con, fov_map)
 
 	for y in range(zone.height):
 		
 		for x in range(zone.width):
 			
+			lit = libtcod.map_is_in_fov(fov_map, x, y)
 			wall = zone[x][y].block_sight
 			
-			if wall:
-				libtcod.console_set_char_background(con, x, y, COLOR_WALL_DARK, libtcod.BKGND_SET)
+			if not lit:
+				#it's out of the player's FOV
+				if wall:
+					libtcod.console_set_char_background(con, x, y, COLOR_WALL_DARK, libtcod.BKGND_SET)
+				else:
+					libtcod.console_set_char_background(con, x, y, COLOR_GROUND_DARK, libtcod.BKGND_SET)
 			else:
-				libtcod.console_set_char_background(con, x, y, COLOR_GROUND_DARK, libtcod.BKGND_SET)
+				#it is inside the player's fov
+				if wall:
+					libtcod.console_set_char_background(con, x, y, COLOR_WALL_LIT, libtcod.BKGND_SET)
+				else:
+					libtcod.console_set_char_background(con, x, y, COLOR_GROUND_LIT, libtcod.BKGND_SET)
 
 	# blit out drawing buffer
 	libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
@@ -85,9 +101,18 @@ SCREEN_HEIGHT = 50
 #color constants
 
 COLOR_WALL_DARK = libtcod.Color(0, 0, 100)
+COLOR_WALL_LIT = libtcod.Color(130, 110, 50)
 COLOR_GROUND_DARK = libtcod.Color(50, 50, 150)
+COLOR_GROUND_LIT = libtcod.Color(200, 180, 50)
 COLOR_PLAYER = libtcod.white
 COLOR_NPC = libtcod.yellow
+
+# fov constants
+
+FOV_ALGO = 0  #default FOV algorithm
+FOV_LIGHT_WALLS = True
+FOV_RADIUS = 10
+
 
 # turn on fps limit
 libtcod.sys_set_fps(LIMIT_FPS)
@@ -103,25 +128,36 @@ con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
 zone = Zone()
 # will be just one room for now
 zone.roomer(max_rooms=30)
+
+
+# init fov
+fov_map = libtcod.map_new(zone.width, zone.height)
+
+for y in range(zone.height):
+	for x in range(zone.width):
+		#libtcode requires the opposite values, so invert them!
+		libtcod.map_set_properties(fov_map, x, y, not zone[x][y].block_sight, not zone[x][y].blocked)
+
+
 # init objects in the zone
 
-player = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', COLOR_PLAYER, con, zone)
+player = Object(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, '@', COLOR_PLAYER, zone)
 # player to any non-blocked tile
 player.x, player.y = zone.random_valid_coords()
 
-npc = Object(SCREEN_WIDTH/2 - 5, SCREEN_HEIGHT/2, '@', COLOR_NPC , con, zone)
+npc = Object(SCREEN_WIDTH/2 - 5, SCREEN_HEIGHT/2, '@', COLOR_NPC, zone)
 
 objects = [npc, player]
 
 # the main loop
 while not libtcod.console_is_window_closed():
-
+	recompute_fov()
 	render_all()
 	libtcod.console_flush()
 
 	# clear all objects
 	for gobject in objects:
-		gobject.clear()
+		gobject.clear(con)
 	
 	#handle keys and exit game if needed
 	exit = handle_keys()
