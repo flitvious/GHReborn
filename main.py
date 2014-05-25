@@ -2,7 +2,7 @@
 
 import libtcodpy as libtcod
 import logger
-from gobject import Object
+from objects import Object
 from zone import Zone
 from renderer import Renderer
 
