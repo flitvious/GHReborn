@@ -40,11 +40,9 @@ class Application:
 		# put player to random coords inside the zone
 		self.player = self.zone.add_object('@', libtcod.white)
 
-	def handle_keys(self):
+	def handle_keys(self, key):
 		"""handle input from the main loop"""
-		#key = libtcod.console_check_for_keypress()
-		key = libtcod.console_wait_for_keypress(True)
-		
+
 		if key.vk == libtcod.KEY_ENTER and key.lalt:
 			#Alt+Enter: toggle fullscreen
 			libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -54,7 +52,6 @@ class Application:
 			return True
 
 		# cheats/debug
-		
 		elif key.vk == libtcod.KEY_1 and key.lctrl:
 			logger.log("cheats", "teleporting randomly")
 			self.player.x, self.player.y = self.zone.random_valid_coords()
@@ -119,7 +116,11 @@ def main():
 		app.renderer.clear_objects(app.zone.objects)
 		
 		#handle keys and exit game if needed
-		exit = app.handle_keys()
+		# libtcod 1.5.1 has this bugged and working twice, use 1.5.2!
+		#key = libtcod.console_check_for_keypress()
+		key = libtcod.console_wait_for_keypress(True)
+		
+		exit = app.handle_keys(key)
 		if exit:
 			break
 
