@@ -91,16 +91,16 @@ class Zone:
 		"""Checks whether a particular tile is blocked or not"""
 		# first test the map tile
 		if self.cells[x][y].blocked is True:
-			logger.log("movement", "Tile is blocked (wall)")
+			logger.log(logger.types.movement, "Tile is blocked (wall)")
 			return True
 
 		# now check for any blocking objects
 		for obj in self.objects:
 			if obj.blocks and obj.x == x and obj.y == y:
-				logger.log("movement", "Tile is blocked (by " + obj.name + ")" )
+				logger.log(logger.types.movement, "Tile is blocked (by " + obj.name + ")" )
 				return True
 		
-		logger.log("movement", "Tile is not blocked!")
+		logger.log(logger.types.movement, "Tile is not blocked!")
 		return False
 
 	######## Roomer part, make a different class of it eventually and call from zone class! ##########
@@ -138,7 +138,7 @@ class Zone:
 		def tunnelize(coords_new, coords_prev):
 			"""Draw a pair of tunnels vertically and horizontally between new and prev"""
 
-			logger.log("level_gen", "Tunnelizing between " + str(coords_new) + " and " + str(coords_prev))
+			logger.log(logger.types.level_gen, "Tunnelizing between " + str(coords_new) + " and " + str(coords_prev))
 
 			new_x, new_y = coords_new
 			prev_x, prev_y = coords_prev
@@ -171,7 +171,7 @@ class Zone:
 				# tunnelize
 				current_room_idx = len(rooms) - 1
 				if current_room_idx > 0:
-					logger.log("level_gen", "Roomer: trying to tunnel #" + str(current_room_idx))
+					logger.log(logger.types.level_gen, "Roomer: trying to tunnel #" + str(current_room_idx))
 					tunnelize(rooms[current_room_idx].center(), rooms[current_room_idx - 1].center())
 				#populate with monsters
 				populate_room(new_room)
@@ -183,7 +183,7 @@ class Zone:
 			for y in range(rect.y1, rect.y2):
 				self.cells[x][y].blocked = False
 				self.cells[x][y].block_sight = False
-		#logger.log("level_gen", "Created a room")
+		#logger.log(logger.types.level_gen, "Created a room")
 	
 	def carve_h_tunnel(self, x1, x2, y):
 		"""create a horizontal line of passable tiles between x1 and x2 and a specified y"""

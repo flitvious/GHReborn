@@ -29,4 +29,4 @@ class Object:
 		if not self.zone.is_blocked(self.x + dx, self.y + dy):
 			self.x += dx
 			self.y += dy
-			logger.log("movement", self.name + " moved to " + str((self.x, self.y)))
+			logger.log(logger.types.movement, self.name + " moved to " + str((self.x, self.y)))

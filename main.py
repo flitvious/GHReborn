@@ -2,6 +2,7 @@
 
 import libtcodpy as libtcod
 import logger
+import enums
 from objects import Object
 from zone import Zone
 from renderer import Renderer, Fov
@@ -17,7 +18,7 @@ class Application:
 
 		# turn on fps limit if > 0
 		if self.LIMIT_FPS > 0:
-			logger.log("rendering", "FPS limiter set to " + str(self.LIMIT_FPS))
+			logger.log(logger.types.rendering, "FPS limiter set to " + str(self.LIMIT_FPS))
 			libtcod.sys_set_fps(self.LIMIT_FPS)
 		
 		# import font
@@ -25,6 +26,13 @@ class Application:
 		# root console / main window / 0
 		libtcod.console_init_root(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 'Ghreborn', False)
 		
+		# states
+		self.states = enums.enum('playing', 'pause')
+		self.state = self.states.playing
+
+		# possible human player actions
+		self.actions = enums.enum('exit', 'no_turn', 'move')
+
 		# init primary console
 		self.con = libtcod.console_new(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
 		# init renderer
@@ -41,7 +49,62 @@ class Application:
 		self.player = self.zone.add_object('@', 'player', libtcod.white)
 
 	def handle_keys(self, key):
-		"""handle input from the main loop"""
+		"""
+		Handle input from the main loop.
+		"""
+
+		def handle_movement():
+			moved = False
+
+			if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
+				moved = True
+				dx = 0
+				dy = -1
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN) or libtcod.console_is_key_pressed(libtcod.KEY_KP2):
+				moved = True
+				dx = 0
+				dy = 1
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT) or libtcod.console_is_key_pressed(libtcod.KEY_KP4):
+				moved = True
+				dx = -1
+				dy = 0
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT) or libtcod.console_is_key_pressed(libtcod.KEY_KP6):
+				moved = True
+				dx = 1
+				dy = 0
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_KP7):
+				moved = True
+				dx = -1
+				dy = -1
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_KP9):
+				moved = True
+				dx = 1
+				dy = -1
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_KP1):
+				moved = True
+				dx = -1
+				dy = 1
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_KP3):
+				moved = True
+				dx = 1
+				dy = 1
+			
+			if moved:
+				# move the PC
+				self.player.move(dx, dy)
+				# return 'moved'
+				return self.actions.move
+			else:
+				# return 'no turn taken'
+				return self.actions.no_turn
+
 
 		if key.vk == libtcod.KEY_ENTER and key.lalt:
 			#Alt+Enter: toggle fullscreen
@@ -49,41 +112,23 @@ class Application:
 
 		elif key.vk == libtcod.KEY_ESCAPE:
 			#exit game
-			return True
+			return self.actions.exit
 
 		# cheats/debug
 		elif key.vk == libtcod.KEY_1 and key.lctrl:
-			logger.log("cheats", "teleporting randomly")
+			logger.log(logger.types.cheats, "teleporting randomly")
 			self.player.x, self.player.y = self.zone.random_valid_coords()
 
 		elif key.vk == libtcod.KEY_2 and key.lctrl:
-			logger.log("cheats", "exploring all map")
+			logger.log(logger.types.cheats, "exploring all map")
 			self.renderer.show_all(self.zone, self.zone.objects)
 		
-		#player movement
-		if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
-			self.player.move(0, -1)		
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN) or libtcod.console_is_key_pressed(libtcod.KEY_KP2):
-			self.player.move(0, 1)
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT) or libtcod.console_is_key_pressed(libtcod.KEY_KP4):
-			self.player.move(-1, 0)
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT) or libtcod.console_is_key_pressed(libtcod.KEY_KP6):
-			self.player.move(1, 0)
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_KP7):
-			self.player.move(-1, -1)
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_KP9):
-			self.player.move(1, -1)
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_KP1):
-			self.player.move(-1, 1)
-
-		elif libtcod.console_is_key_pressed(libtcod.KEY_KP3):
-			self.player.move(1, 1)
+		#player movement, works only if playing
+		if self.state == self.states.playing:
+			action = handle_movement()
+			# since we handle only movement now, just return the action
+			# fix this in handle_movement once some new things are implemented
+			return action
 
 
 def main():
@@ -112,8 +157,10 @@ def main():
 		#key = libtcod.console_check_for_keypress()
 		key = libtcod.console_wait_for_keypress(True)
 		
-		exit = app.handle_keys(key)
-		if exit:
+		action = app.handle_keys(key)
+		# logger stuff
+		logger.log(logger.types.input, "Handle keys returned " + app.actions.reverse_mapping[action])
+		if action == app.actions.exit:
 			break
 
 if __name__ == '__main__':
