@@ -55,3 +55,26 @@ class Renderer:
 		"""Clears all objects"""
 		for obj in objects:
 			libtcod.console_put_char(self.con, obj.x, obj.y, ' ', libtcod.BKGND_NONE)
+
+class Fov:
+	"""Fov map wrapper"""	
+	def __init__(self, algo, light_walls, light_radius):
+		
+		self.light_radius = light_radius
+		self.light_walls = light_walls
+		self.algo = algo
+		
+		# make an empty fov map for zone
+		self.map = None
+
+	def read_zone(self, zone):
+		"""Read the zone and adjust map values accordingly"""
+		self.map = libtcod.map_new(zone.width, zone.height)
+		for y in range(zone.height):
+			for x in range(zone.width):
+				#libtcode requires the opposite values, so invert them!
+				libtcod.map_set_properties(self.map, x, y, not zone[x][y].block_sight, not zone[x][y].blocked)
+
+	def recompute(self, x, y):
+		"""Compute fov for position"""
+		libtcod.map_compute_fov(self.map, x, y, self.light_radius, self.light_walls, self.algo)
