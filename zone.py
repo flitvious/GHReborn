@@ -103,6 +103,13 @@ class Zone:
 		logger.log(logger.types.movement, "Tile is not blocked!")
 		return False
 
+	def object_at(self, x, y):
+		"""Returns the object at coords or None"""
+		for obj in self.objects:
+			if obj.x == x and obj.y == y:
+				return obj
+		return None
+
 	######## Roomer part, make a different class of it eventually and call from zone class! ##########
 
 	def roomer(self, room_max_size=10, room_min_size=6, max_rooms=30, max_monsters_per_room=3):

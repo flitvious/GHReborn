@@ -10,20 +10,23 @@ SHOW_INPUT = False
 SHOW_CHEATS = True
 SHOW_MOVEMENT = False
 SHOW_LEVEL_GEN = False
-SHOW_RENDERING = True
+SHOW_RENDERING = False
+SHOW_AI = False
+SHOW_COMBAT = True
 
 # error log switch
 VERBOSITY_ERROR = True
 
 # suppressor based on message class
 
-types = enums.enum('cheats', 'movement', 'level_gen', 'rendering', 'input')
+types = enums.enum('cheats', 'movement', 'level_gen', 'rendering', 'input', 'ai', 'combat')
 
 # cheats - cheat codes
 # movement - player moves, monster moves
 # level_gen - level generation
 # rendering - rendering-related stuff (consoles, e.t.c.)
-# input - various keypresses
+# input - various keypresses (actions)
+# ai - ai related stuff
 
 
 
@@ -37,6 +40,10 @@ def log(subtype, message):
 		if subtype == types.level_gen and not SHOW_LEVEL_GEN:
 			return
 		if subtype == types.input and not SHOW_INPUT:
+			return
+		if subtype == types.combat and not SHOW_COMBAT:
+			return
+		if subtype == types.ai and not SHOW_AI:
 			return
 		str(message)
 		print "DEBUG (" + types.reverse_mapping[subtype] + "): " + message

@@ -126,8 +126,14 @@ class Application:
 		#player movement, works only if playing
 		if self.state == self.states.playing:
 			action = handle_movement()
-			# since we handle only movement now, just return the action
-			# fix this in handle_movement once some new things are implemented
+			
+			#if player did something, let monsters take their turn
+			if action != self.actions.no_turn:
+				for obj in self.zone.objects:
+					# if not player, act
+					if not obj is self.player:
+						logger.log(logger.types.ai, 'The ' + obj.name + ' growls!')
+			# return the action to check if player chose to exit
 			return action
 
 
@@ -164,7 +170,7 @@ def main():
 			break
 
 if __name__ == '__main__':
-   main()
+	main()
 
 
 

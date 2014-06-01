@@ -27,6 +27,23 @@ class Object:
 		"""move by the given amount"""
 		# check if blocked by wall or object
 		if not self.zone.is_blocked(self.x + dx, self.y + dy):
+			# not blocked, move there
 			self.x += dx
 			self.y += dy
 			logger.log(logger.types.movement, self.name + " moved to " + str((self.x, self.y)))
+		else:
+			# zone is blocked, let's try to bump into object!
+			obj = self.zone.object_at(self.x + dx, self.y + dy)
+			if not obj is None:
+				#it is an object
+				self.bump(obj)
+			else:
+				#it is a wall
+				logger.log(logger.types.combat, 'The ' + self.name + ' bumps into a wall. Ugh.')
+				pass
+
+	def bump(self, obj):
+		"""bumps into an object"""
+		#since we have only monsters, try to attack it"
+		logger.log(logger.types.combat, 'The ' + obj.name + ' laughs at your puny efforts to attack him!')
+
