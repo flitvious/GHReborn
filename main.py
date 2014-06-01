@@ -57,12 +57,15 @@ class Application:
 		
 		elif key.vk == libtcod.KEY_1 and key.lctrl:
 			logger.log("cheats", "teleporting randomly")
-			self.player.x, self.player.y = self.zone.random_valid_coords() 
+			self.player.x, self.player.y = self.zone.random_valid_coords()
 
+		elif key.vk == libtcod.KEY_2 and key.lctrl:
+			logger.log("cheats", "exploring all map")
+			self.renderer.show_all(self.zone, self.zone.objects)
+		
 		#player movement
-
 		if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
-			player.move(0, -1)
+			self.player.move(0, -1)
 			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN) or libtcod.console_is_key_pressed(libtcod.KEY_KP2):

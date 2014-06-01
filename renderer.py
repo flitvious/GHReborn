@@ -19,6 +19,7 @@ class Renderer:
 
 	def process_zone(self, zone, fov_map):
 		"""Renders lit and unlit zone tiles and explores them"""	
+		# renderer exploring = bad, fix this 
 		for y in range(zone.height):
 			for x in range(zone.width):
 				
@@ -42,6 +43,20 @@ class Renderer:
 					# explore the tile
 					if not zone[x][y].explored:
 						zone[x][y].explored = True
+
+	def show_all(self, zone, objects):
+		"""Show all the tiles in a zone."""
+		# this repeats process_zone and render_objects, fix this somehow
+		for y in range(zone.height):
+			for x in range(zone.width):
+				wall = zone[x][y].block_sight
+				if wall:
+					libtcod.console_set_char_background(self.con, x, y, COLOR_WALL_LIT, libtcod.BKGND_SET)
+				else:
+					libtcod.console_set_char_background(self.con, x, y, COLOR_GROUND_LIT, libtcod.BKGND_SET)
+		for obj in objects:
+			libtcod.console_set_default_foreground(self.con, obj.color)
+			libtcod.console_put_char(self.con, obj.x, obj.y, obj.char, libtcod.BKGND_NONE)
 
 	def render_objects(self, objects, fov_map):
 		"""Renders all objects"""
