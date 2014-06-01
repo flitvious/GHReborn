@@ -17,6 +17,7 @@ class Application:
 
 		# turn on fps limit if > 0
 		if self.LIMIT_FPS > 0:
+			logger.log("rendering", "FPS limiter set to " + str(self.LIMIT_FPS))
 			libtcod.sys_set_fps(self.LIMIT_FPS)
 		
 		# import font
@@ -49,46 +50,48 @@ class Application:
 			libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
 		elif key.vk == libtcod.KEY_ESCAPE:
-			return True  #exit game
+			#exit game
+			return True
 
 		# cheats/debug
 		
 		elif key.vk == libtcod.KEY_1 and key.lctrl:
-			logger.log("teleporting randomly")
+			logger.log("cheats", "teleporting randomly")
 			self.player.x, self.player.y = self.zone.random_valid_coords() 
 
 		#player movement
+
 		if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
 			player.move(0, -1)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN) or libtcod.console_is_key_pressed(libtcod.KEY_KP2):
 			self.player.move(0, 1)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT) or libtcod.console_is_key_pressed(libtcod.KEY_KP4):
 			self.player.move(-1, 0)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT) or libtcod.console_is_key_pressed(libtcod.KEY_KP6):
 			self.player.move(1, 0)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP7):
 			self.player.move(-1, -1)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP9):
 			self.player.move(1, -1)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP1):
 			self.player.move(-1, 1)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP3):
 			self.player.move(1, 1)
-			logger.log("player moved to " + str((self.player.x, self.player.y)))	
+			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))	
 
 
 def main():
