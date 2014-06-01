@@ -38,7 +38,7 @@ class Rect:
 			return False
 
 class Zone:
-	"""A map, x by y of empty tiles"""
+	"""A map, x by y of tiles"""
 	
 	def __init__(self, width=80, height=45):
 		
@@ -57,7 +57,7 @@ class Zone:
 		return self.cells[index]
 
 	def add_object(self, char, color, x=None, y=None):
-		""" Add an object to the zone's list of objects"""
+		""" Add an object to the zone's list of objects. If both coords are not set, random coords are picked"""
 		
 		# if both coords aren't set, use random
 		if x is None or y is None:
@@ -69,7 +69,7 @@ class Zone:
 
 		#objects[-1] - last added 
 		return new_object
-	
+
 	def random_valid_coords(self, max_tries=50):
 		"""Tries to return a random non-blocked tile inside the zone. If it fails, it returns the first non-blocked tile it finds"""
 		for r in range(max_tries):
@@ -87,10 +87,27 @@ class Zone:
 		logger.error("Hey, the zone has no valid coords! Returning zeroes.")
 		return (0, 0)
 
-	def roomer(self, room_max_size=10, room_min_size=6, max_rooms=30):
-		"""Fills zone with rooms and tunnels"""
+	######## Roomer part, make a different class of it eventually and call from zone class! ##########
+
+	def roomer(self, room_max_size=10, room_min_size=6, max_rooms=30, max_monsters_per_room=3):
+		"""Fills zone with rooms, tunnels and monsters"""
 		rooms = []
 		prev_num = 0
+
+		def populate_room(room):
+			"""Adds random objects to the room. Stub without actual monsters."""
+			for i in range(max_monsters_per_room):
+				# choose random spot for this monster
+				x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
+				y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
+ 				
+ 				  #80% chance of getting an orc
+				if libtcod.random_get_int(0, 0, 100) < 80:
+					#create an orc
+					self.add_object('o', libtcod.desaturated_green, x, y)
+				else:
+					#create a troll
+					self.add_object('T', libtcod.darker_green, x, y)
 
 		def has_intersections(candidate):
 			"""run through the existing rooms and see if they intersect with the candidate"""
@@ -118,6 +135,7 @@ class Zone:
 				self.carve_v_tunnel(prev_y, new_y, prev_x) # 3 0 0
 				self.carve_h_tunnel(prev_x, new_x, new_y)  # 0 3 0
 
+		# create rooms one by one
 		for room_num in range(max_rooms):
 			#random width and height
 			w = libtcod.random_get_int(0, room_min_size, room_max_size)
@@ -132,10 +150,13 @@ class Zone:
 				#this means there are no intersections, so this room is valid
 				self.carve_room(new_room)
 				rooms.append(new_room)
+				# tunnelize
 				current_room_idx = len(rooms) - 1
 				if current_room_idx > 0:
 					logger.log("Roomer: trying to tunnel #" + str(current_room_idx))
 					tunnelize(rooms[current_room_idx].center(), rooms[current_room_idx - 1].center())
+				#populate with monsters
+				populate_room(new_room)
 
 	def carve_room(self, rect):
 		"""go through the tiles inside the rectangle borders and make them passable"""

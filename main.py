@@ -123,8 +123,6 @@ fov.read_zone(zone)
 
 # player to random coords
 player = zone.add_object('@', COLOR_PLAYER)
-# npc to random coords
-npc = zone.add_object('@', COLOR_NPC)
 
 # the main loop
 while not libtcod.console_is_window_closed():
