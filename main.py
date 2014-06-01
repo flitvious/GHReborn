@@ -38,7 +38,7 @@ class Application:
 		# load zone information t ofov
 		self.fov.read_zone(self.zone)
 		# put player to random coords inside the zone
-		self.player = self.zone.add_object('@', libtcod.white)
+		self.player = self.zone.add_object('@', 'player', libtcod.white)
 
 	def handle_keys(self, key):
 		"""handle input from the main loop"""
@@ -62,36 +62,28 @@ class Application:
 		
 		#player movement
 		if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
-			self.player.move(0, -1)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
+			self.player.move(0, -1)		
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN) or libtcod.console_is_key_pressed(libtcod.KEY_KP2):
 			self.player.move(0, 1)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT) or libtcod.console_is_key_pressed(libtcod.KEY_KP4):
 			self.player.move(-1, 0)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT) or libtcod.console_is_key_pressed(libtcod.KEY_KP6):
 			self.player.move(1, 0)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP7):
 			self.player.move(-1, -1)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP9):
 			self.player.move(1, -1)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP1):
 			self.player.move(-1, 1)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))
 
 		elif libtcod.console_is_key_pressed(libtcod.KEY_KP3):
 			self.player.move(1, 1)
-			logger.log("movement", "player moved to " + str((self.player.x, self.player.y)))	
 
 
 def main():

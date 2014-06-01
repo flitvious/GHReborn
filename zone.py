@@ -56,14 +56,14 @@ class Zone:
 		# zone[x][y] means zone.__getitem__(x).__getitem__(y) which does the trick
 		return self.cells[index]
 
-	def add_object(self, char, color, x=None, y=None):
+	def add_object(self, char, name, color, x=None, y=None, blocks=False):
 		""" Add an object to the zone's list of objects. If both coords are not set, random coords are picked"""
 		
 		# if both coords aren't set, use random
 		if x is None or y is None:
 			x, y = self.random_valid_coords()
 
-		new_object = Object(char, color, x, y)
+		new_object = Object(char, name, color, x, y, blocks)
 		new_object.set_zone(self)
 		self.objects.append(new_object)
 
@@ -87,6 +87,22 @@ class Zone:
 		logger.error("Hey, the zone has no valid coords! Returning zeroes.")
 		return (0, 0)
 
+	def is_blocked(self, x, y):
+		"""Checks whether a particular tile is blocked or not"""
+		# first test the map tile
+		if self.cells[x][y].blocked is True:
+			logger.log("movement", "Tile is blocked (wall)")
+			return True
+
+		# now check for any blocking objects
+		for obj in self.objects:
+			if obj.blocks and obj.x == x and obj.y == y:
+				logger.log("movement", "Tile is blocked (by " + obj.name + ")" )
+				return True
+		
+		logger.log("movement", "Tile is not blocked!")
+		return False
+
 	######## Roomer part, make a different class of it eventually and call from zone class! ##########
 
 	def roomer(self, room_max_size=10, room_min_size=6, max_rooms=30, max_monsters_per_room=3):
@@ -100,14 +116,16 @@ class Zone:
 				# choose random spot for this monster
 				x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
 				y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
- 				
- 				  #80% chance of getting an orc
-				if libtcod.random_get_int(0, 0, 100) < 80:
-					#create an orc
-					self.add_object('o', libtcod.desaturated_green, x, y)
-				else:
-					#create a troll
-					self.add_object('T', libtcod.darker_green, x, y)
+
+				# check if the tile is not blocked by anything first
+				if not self.is_blocked(x, y):
+					#80% chance of getting an orc
+					if libtcod.random_get_int(0, 0, 100) < 80:
+						#create an orc
+						self.add_object('o', 'orc', libtcod.desaturated_green, x, y, blocks=True)
+					else:
+						#create a troll
+						self.add_object('T', 'troll', libtcod.darker_green, x, y, blocks=True)
 
 		def has_intersections(candidate):
 			"""run through the existing rooms and see if they intersect with the candidate"""
