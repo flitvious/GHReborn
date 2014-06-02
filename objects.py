@@ -75,6 +75,22 @@ class Object:
 		#since we have only monsters, try to attack it"
 		logger.log(logger.types.combat, 'The ' + self.name + ' bumps into ' + obj.name)
 
+
+	def step_towards(self, target_x, target_y):
+		"""
+		Moves one tile towards target coords
+		"""
+		#vector from this object to the target, and distance
+		dx = target_x - self.x
+		dy = target_y - self.y
+		distance = math.sqrt(dx ** 2 + dy ** 2)
+
+		#normalize it to length 1 (preserving direction), then round it and
+		#convert to integer so the movement is restricted to the map grid
+		dx = int(round(dx / distance))
+		dy = int(round(dy / distance))
+		self.move(dx, dy)
+
 ### Those below are components that can be snapped on the basic object. Each has its owner object.
 
 class Fighter:
