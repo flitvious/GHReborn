@@ -45,7 +45,7 @@ class Renderer:
 						zone[x][y].explored = True
 
 	def show_all(self, zone, objects):
-		"""Show all the tiles in a zone."""
+		"""Cheat function: show all the tiles in a zone."""
 		# this repeats process_zone and render_objects, fix this somehow
 		for y in range(zone.height):
 			for x in range(zone.width):

@@ -4,6 +4,9 @@
 
 * Sort out fov_maps. Ae they per-object or single for player only?
 * Refactor roomer code, it takes shitty things like player and fov.
+* move screen width and height inside the renderer (and all other stuff)
+* player component for object
+* fixme: fighters kill fighters by bumping into them! player kills himself by standing in place. Shit, this is just too hilarious!
 
 ## Some sort of roadmap
 

@@ -163,6 +163,8 @@ def main():
 		app.renderer.process_zone(app.zone, app.fov.map)
 		# render all objects in the zone
 		app.renderer.render_objects(app.zone.objects, app.fov.map)
+		# show stats
+		logger.game("Player's health is " + str(app.player.fighter.hp) + " of " + str(app.player.fighter.max_hp))
 		# blit out drawing buffer
 		libtcod.console_blit(app.con, 0, 0, app.SCREEN_WIDTH, app.SCREEN_HEIGHT, 0, 0, 0)
 		# flush the console

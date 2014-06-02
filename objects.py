@@ -74,9 +74,9 @@ class Object:
 
 	def bump(self, obj):
 		"""bumps into an object"""
-		#since we have only monsters, try to attack it"
-		logger.log(logger.types.combat, 'The ' + self.name + ' bumps into the ' + obj.name)
-
+		# fighter will try to attack another fighter
+		if (not self.fighter is None) and (not obj.fighter is None):
+			self.fighter.attack(obj)
 
 	def step_towards(self, target_x, target_y):
 		"""
@@ -114,11 +114,31 @@ class Fighter:
 		self.defense = defense
 		self.power = power
 
+	def take_damage(self, damage):
+		"""apply damage if possible"""
+		if damage > 0:
+			self.hp -= damage
+
+	def attack(self, target):
+		"""attack another object (must have fighter component)"""
+		#a simple formula for attack damage
+		damage = self.power - target.fighter.defense
+ 
+		if damage > 0:
+			#make the target take some damage
+			logger.game(self.owner.name.capitalize() + ' attacks ' + target.name + ' for ' + str(damage) + ' hit points.')
+			target.fighter.take_damage(damage)
+		else:
+			logger.game(self.owner.name.capitalize() + ' attacks ' + target.name + ' but it has no effect!')
+
 class BasicMonster:
 	"""
 	Component AI for a basic monster
 	"""
 	def take_turn(self, player, fov_map):
+		"""
+		Chase and try to attack. Needs to know where the player is and if she can see the monster.
+		"""
 		#a basic monster takes its turn. If you can see it, it can see you
 		monster = self.owner
 		#logger.log(logger.types.ai, monster.name + " takes turn")
@@ -129,4 +149,4 @@ class BasicMonster:
 				monster.step_towards(player.x, player.y)
 			elif player.fighter.hp > 0:
 				#close enough, attack! (if the player is still alive.)
-				logger.game('The attack of the ' + monster.name + ' bounces off your shiny metal armor!')
+				monster.fighter.attack(player)
