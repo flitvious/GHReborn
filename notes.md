@@ -1,9 +1,6 @@
 ## Things to consider
 
-* libtcode zip should be integraed properly, cheap stuff for now
-* wrapper around libtcod random numbers function
-* wrappers around all libcode stuff to eventually replace libtcode (no mac support = bad)
-
+* libtcode zip should be integraed properly (subfolders at least), cheap stuff for now
 
 ## Some sort of roadmap
 

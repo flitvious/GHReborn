@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 import logger
-from objects import Object
+import objects
 
 class Tile:
 	"""a tile of the map and its properties"""
@@ -56,19 +56,16 @@ class Zone:
 		# zone[x][y] means zone.__getitem__(x).__getitem__(y) which does the trick
 		return self.cells[index]
 
-	def add_object(self, char, name, color, x=None, y=None, blocks=False):
-		""" Add an object to the zone's list of objects. If both coords are not set, random coords are picked"""
+	def add_object(self, obj, x=None, y=None):
+		""" Add an object to the zone's list of objects at specified coords. If both coords are not set, random coords are picked"""
 		
 		# if both coords aren't set, use random
 		if x is None or y is None:
 			x, y = self.random_valid_coords()
 
-		new_object = Object(char, name, color, x, y, blocks)
-		new_object.set_zone(self)
-		self.objects.append(new_object)
-
+		obj.set_zone(self, x, y)
+		self.objects.append(obj)
 		#objects[-1] - last added 
-		return new_object
 
 	def random_valid_coords(self, max_tries=50):
 		"""Tries to return a random non-blocked tile inside the zone. If it fails, it returns the first non-blocked tile it finds"""
@@ -129,10 +126,20 @@ class Zone:
 					#80% chance of getting an orc
 					if libtcod.random_get_int(0, 0, 100) < 80:
 						#create an orc
-						self.add_object('o', 'orc', libtcod.desaturated_green, x, y, blocks=True)
+						obj = objects.Object('o', 'orc', libtcod.desaturated_green, 
+							blocks=True,
+							fighter=objects.Fighter(hp=10, defense=2, power=5),
+							ai=objects.BasicMonster()
+							)
+						self.add_object(obj, x, y)
 					else:
 						#create a troll
-						self.add_object('T', 'troll', libtcod.darker_green, x, y, blocks=True)
+						obj = objects.Object('T', 'troll', libtcod.darker_green,
+							blocks=True,
+							fighter=objects.Fighter(hp=16, defense=1, power=4),
+							ai=objects.BasicMonster()
+							)
+						self.add_object(obj, x, y)
 
 		def has_intersections(candidate):
 			"""run through the existing rooms and see if they intersect with the candidate"""

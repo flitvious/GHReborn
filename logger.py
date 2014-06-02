@@ -29,7 +29,6 @@ types = enums.enum('cheats', 'movement', 'level_gen', 'rendering', 'input', 'ai'
 # ai - ai related stuff
 
 
-
 def log(subtype, message):
 	"""Output debug log message of given type"""
 	if VERBOSITY_DEBUG:
@@ -53,3 +52,7 @@ def error(message):
 	if VERBOSITY_ERROR:
 		str(message)
 		print "ERROR: " + message
+
+def game(message):
+	"""Output game information"""
+	print "GAME: " + message

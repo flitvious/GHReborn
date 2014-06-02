@@ -3,7 +3,7 @@
 import libtcodpy as libtcod
 import logger
 import enums
-from objects import Object
+import objects
 from zone import Zone
 from renderer import Renderer, Fov
 
@@ -45,8 +45,14 @@ class Application:
 		self.fov = Fov(algo=0, light_walls=True, light_radius=10)
 		# load zone information t ofov
 		self.fov.read_zone(self.zone)
+		# create an object and make him a fighter
+		self.player = objects.Object('@', 'player', libtcod.white, 
+			blocks=True, 
+			fighter=objects.Fighter(hp=30, defense=2, power=5)
+			)
 		# put player to random coords inside the zone
-		self.player = self.zone.add_object('@', 'player', libtcod.white)
+		self.zone.add_object(self.player)
+
 
 	def handle_keys(self, key):
 		"""
@@ -132,7 +138,7 @@ class Application:
 				for obj in self.zone.objects:
 					# if not player, act
 					if not obj is self.player:
-						logger.log(logger.types.ai, 'The ' + obj.name + ' growls!')
+						logger.log(logger.types.ai, 'The ' + obj.name + ' takes turn!')
 			# return the action to check if player chose to exit
 			return action
 

@@ -10,18 +10,46 @@ class Object:
 	Eventually there can be special objects, like artifacts or the player 
 	that can belong to the "world" or move between the zones.
 	"""
-	def __init__(self, char, name, color, x, y, blocks=False):
-		self.x = x
-		self.y = y
+	
+	# use static properties to init what u need
+	#profession = enums.enum('Fighter', 'Mage')
+
+	def __init__(self, char, name, color, blocks=False, fighter=None, ai=None):
+		"""
+		Initializes a basic object plus snaps on additional optonal components (fighter, ai, etc) if any
+		"""
+		# use from zone to set these!
+		#self.x = x
+		#self.y = y
+
 		self.char = char
 		self.color = color
 		self.zone = None
 		self.blocks = blocks
 		self.name = name
 
-	def set_zone(self, zone):
-		"""DON'T use this directly (unless you want some special object!), call zone's method for adding objects to zone."""
+		# components
+		
+		# todo - there should be a better constructor that snaps on these components without
+		# the need to create them beforehand in code
+		# just use enums and rename fighter to class, idk. 
+
+		self.fighter = fighter
+		if self.fighter:
+			self.fighter.owner = self
+
+		self.ai = ai
+		if self.ai:
+			self.ai.owner = self
+
+	def set_zone(self, zone, x, y):
+		"""
+		Sets object's zone and positions the object at coords.
+		DON'T use this directly (unless you want some special object!), call zone's method for adding objects to zone.
+		"""
 		self.zone = zone
+		self.x = x
+		self.y = y
 
 	def move(self, dx, dy):
 		"""move by the given amount"""
@@ -45,5 +73,24 @@ class Object:
 	def bump(self, obj):
 		"""bumps into an object"""
 		#since we have only monsters, try to attack it"
-		logger.log(logger.types.combat, 'The ' + obj.name + ' laughs at your puny efforts to attack him!')
+		logger.log(logger.types.combat, 'The ' + self.name + ' bumps into ' + obj.name)
 
+### Those below are components that can be snapped on the basic object. Each has its owner object.
+
+class Fighter:
+	"""
+	Component class for object that can fight.
+	Holds combat-related properties and methods (monster, player, npc).
+	"""
+	def __init__(self, hp, defense, power):
+		self.max_hp = hp
+		self.hp = hp
+		self.defense = defense
+		self.power = power
+
+class BasicMonster:
+	"""
+	Component AI for a basic monster
+	"""
+	def take_turn(self):
+		logger.game('The ' + self.owner.name + 'growls!')
