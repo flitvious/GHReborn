@@ -101,6 +101,11 @@ class Application:
 				moved = True
 				dx = 1
 				dy = 1
+
+			elif libtcod.console_is_key_pressed(libtcod.KEY_KP5):
+				moved = True
+				dx = 0
+				dy = 0
 			
 			if moved:
 				# move the PC
