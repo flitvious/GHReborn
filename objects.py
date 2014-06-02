@@ -1,5 +1,6 @@
 import libtcodpy as libtcod
 import logger
+import math
 
 class Object:
 	"""
@@ -40,6 +41,7 @@ class Object:
 
 		self.ai = ai
 		if self.ai:
+			logger.log(logger.types.ai, "AI assigned to " + self.name)
 			self.ai.owner = self
 
 	def set_zone(self, zone, x, y):
@@ -73,7 +75,7 @@ class Object:
 	def bump(self, obj):
 		"""bumps into an object"""
 		#since we have only monsters, try to attack it"
-		logger.log(logger.types.combat, 'The ' + self.name + ' bumps into ' + obj.name)
+		logger.log(logger.types.combat, 'The ' + self.name + ' bumps into the ' + obj.name)
 
 
 	def step_towards(self, target_x, target_y):
@@ -90,6 +92,14 @@ class Object:
 		dx = int(round(dx / distance))
 		dy = int(round(dy / distance))
 		self.move(dx, dy)
+
+	def distance_to(self, other):
+		"""
+		Returns distance to another object
+		"""
+		dx = other.x - self.x
+		dy = other.y - self.y
+		return math.sqrt(dx ** 2 + dy ** 2)
 
 ### Those below are components that can be snapped on the basic object. Each has its owner object.
 
@@ -108,5 +118,15 @@ class BasicMonster:
 	"""
 	Component AI for a basic monster
 	"""
-	def take_turn(self):
-		logger.game('The ' + self.owner.name + 'growls!')
+	def take_turn(self, player, fov_map):
+		#a basic monster takes its turn. If you can see it, it can see you
+		monster = self.owner
+		#logger.log(logger.types.ai, monster.name + " takes turn")
+
+		if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
+			#move towards player if far away
+			if monster.distance_to(player) >= 2:
+				monster.step_towards(player.x, player.y)
+			elif player.fighter.hp > 0:
+				#close enough, attack! (if the player is still alive.)
+				logger.game('The attack of the ' + monster.name + ' bounces off your shiny metal armor!')

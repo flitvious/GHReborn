@@ -43,9 +43,9 @@ class Application:
 		self.zone.roomer(max_rooms=30)
 		# init fov
 		self.fov = Fov(algo=0, light_walls=True, light_radius=10)
-		# load zone information t ofov
+		# load zone information to fov
 		self.fov.read_zone(self.zone)
-		# create an object and make him a fighter
+		# create a player object and make him a fighter
 		self.player = objects.Object('@', 'player', libtcod.white, 
 			blocks=True, 
 			fighter=objects.Fighter(hp=30, defense=2, power=5)
@@ -138,10 +138,12 @@ class Application:
 				for obj in self.zone.objects:
 					# if not player, act
 					if not obj is self.player:
-						logger.log(logger.types.ai, 'The ' + obj.name + ' takes turn!')
-			# return the action to check if player chose to exit
+						#if has some ai, take turn
+						if not obj.ai is None:
+							#logger.log(logger.types.ai, "calling ai.take_turn for " + obj.name)
+							obj.ai.take_turn(fov_map=self.fov.map, player=self.player)
+			# return the action (check that player didin't choose to exit)
 			return action
-
 
 def main():
 	"""App init and main loop"""

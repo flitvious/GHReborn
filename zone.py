@@ -111,6 +111,7 @@ class Zone:
 
 	def roomer(self, room_max_size=10, room_min_size=6, max_rooms=30, max_monsters_per_room=3):
 		"""Fills zone with rooms, tunnels and monsters"""
+
 		rooms = []
 		prev_num = 0
 

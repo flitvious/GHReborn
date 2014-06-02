@@ -2,6 +2,9 @@
 
 * libtcode zip should be integraed properly (subfolders at least), cheap stuff for now
 
+* Sort out fov_maps. Ae they per-object or single for player only?
+* Refactor roomer code, it takes shitty things like player and fov.
+
 ## Some sort of roadmap
 
 These are the features I want first:
