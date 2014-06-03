@@ -1,21 +1,51 @@
 import libtcodpy as libtcod
+import logger
 
 #color constants
-
-
-### these should be zone-specific!
+### these should be zone-specific! And also inside the class :)
 COLOR_WALL_DARK = libtcod.Color(0, 0, 100)
 COLOR_WALL_LIT = libtcod.Color(130, 110, 50)
 COLOR_GROUND_DARK = libtcod.Color(50, 50, 150)
 COLOR_GROUND_LIT = libtcod.Color(200, 180, 50)
 
 class Renderer:
-	"""Renders to console"""
+	"""Renders graphics"""
 	
-	def __init__(self, con):
-		# console to render into
-		self.con = con
-		pass
+	def __init__(self, screen_width, screen_height, fps_limit):
+		# store values
+		self.screen_width = screen_width
+		self.screen_height = screen_height
+		self.fps_limit = fps_limit
+
+		# turn on fps limit if > 0
+		if self.fps_limit > 0:
+			logger.log(logger.types.rendering, "FPS limiter set to " + str(self.fps_limit))
+			libtcod.sys_set_fps(self.fps_limit)
+
+		# import font
+		libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+		# root console / main window / 0
+		self.rootcon = libtcod.console_init_root(self.screen_width, self.screen_height, 'Ghreborn', False)	
+		# init primary console
+		self.con = libtcod.console_new(self.screen_width, self.screen_height)
+
+	def toggle_fullscreen(self):
+		"""Toggle fullscreen mode"""
+		libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+
+	def is_closed(self):
+		"""Wrapper around libtcod"""
+		return libtcod.console_is_window_closed()
+
+	def blit_con(self):
+		"""blit out the drawing buffer"""
+		libtcod.console_blit(self.con, 0, 0, self.screen_width, self.screen_height, 0, 0, 0)
+
+	def flush(self):
+		"""Flush everything to screen"""
+		libtcod.console_flush()
+	
+	# Below things are strongly map-related. Should be separated into a Mapper class that calls renderer per-tile or something
 
 	def process_zone(self, zone, fov_map):
 		"""Renders lit and unlit zone tiles and explores them"""	

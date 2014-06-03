@@ -4,28 +4,15 @@ import libtcodpy as libtcod
 import logger
 import enums
 import objects
-from zone import Zone
-from renderer import Renderer, Fov
+import zone
+import renderer
 
 class Application:
 	"""GHreborn main application"""	
 
-	def __init__(self, fps_limit=20, screen_width=80, screen_height=50):
-		# constants
-		self.LIMIT_FPS = fps_limit
-		self.SCREEN_WIDTH = screen_width
-		self.SCREEN_HEIGHT = screen_height
-
-		# turn on fps limit if > 0
-		if self.LIMIT_FPS > 0:
-			logger.log(logger.types.rendering, "FPS limiter set to " + str(self.LIMIT_FPS))
-			libtcod.sys_set_fps(self.LIMIT_FPS)
+	def __init__(self):
 		
-		# import font
-		libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-		# root console / main window / 0
-		libtcod.console_init_root(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 'Ghreborn', False)
-		
+		# these should be static, but I don't care since application has one instance.		
 		# states
 		self.states = enums.enum('playing', 'pause')
 		self.state = self.states.playing
@@ -33,23 +20,25 @@ class Application:
 		# possible human player actions
 		self.actions = enums.enum('exit', 'no_turn', 'move')
 
-		# init primary console
-		self.con = libtcod.console_new(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
-		# init renderer
-		self.renderer = Renderer(self.con)
+		# init the renderer
+		self.renderer = renderer.Renderer(screen_width=80, screen_height=50, fps_limit=20)
+
 		# init the map
-		self.zone = Zone()
+		self.zone = zone.Zone()
 		# populate zone with roomer algorithm
 		self.zone.roomer(max_rooms=30)
 		# init fov
-		self.fov = Fov(algo=0, light_walls=True, light_radius=10)
+		self.fov = renderer.Fov(algo=0, light_walls=True, light_radius=10)
+		
 		# load zone information to fov
 		self.fov.read_zone(self.zone)
+		
 		# create a player object and make him a fighter
 		self.player = objects.Object('@', 'player', libtcod.white, 
 			blocks=True, 
 			fighter=objects.Fighter(hp=30, defense=2, power=5)
 			)
+		
 		# put player to random coords inside the zone
 		self.zone.add_object(self.player)
 
@@ -119,7 +108,7 @@ class Application:
 
 		if key.vk == libtcod.KEY_ENTER and key.lalt:
 			#Alt+Enter: toggle fullscreen
-			libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+			self.renderer.toggle_fullscreen()
 
 		elif key.vk == libtcod.KEY_ESCAPE:
 			#exit game
@@ -156,7 +145,7 @@ def main():
 	app = Application()
 
 	# the main loop
-	while not libtcod.console_is_window_closed():
+	while not app.renderer.is_closed():
 		# recompute fov for player position
 		app.fov.recompute(app.player.x, app.player.y)
 		# render and explore the zone
@@ -166,10 +155,9 @@ def main():
 		# show stats
 		logger.game("Player's health is " + str(app.player.fighter.hp) + " of " + str(app.player.fighter.max_hp))
 		# blit out drawing buffer
-		libtcod.console_blit(app.con, 0, 0, app.SCREEN_WIDTH, app.SCREEN_HEIGHT, 0, 0, 0)
+		app.renderer.blit_con()
 		# flush the console
-		libtcod.console_flush()
-
+		app.renderer.flush()
 		# clear the objects
 		app.renderer.clear_objects(app.zone.objects)
 		

@@ -2,7 +2,7 @@
 
 * libtcode zip should be integraed properly (subfolders at least), cheap stuff for now
 * Sort out fov_maps. Ae they per-object or single for player only?
-* move screen width and height inside the renderer (and all other stuff)
+* properly implement color constants inside the renderer
 
 ## Design
 
