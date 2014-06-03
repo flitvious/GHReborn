@@ -102,7 +102,7 @@ class Application:
 				dx = 1
 				dy = 1
 
-			elif libtcod.console_is_key_pressed(libtcod.KEY_KP5):
+			elif libtcod.console_is_key_pressed(libtcod.KEY_KP5) or libtcod.console_is_key_pressed(libtcod.KEY_5):
 				moved = True
 				dx = 0
 				dy = 0
