@@ -73,9 +73,11 @@ class Object:
 				pass
 
 	def bump(self, obj):
-		"""bumps into an object"""
-		# fighter will try to attack another fighter
-		if (not self.fighter is None) and (not obj.fighter is None):
+		"""bumps into an object (this is called for objects only)"""
+		# this handles collision. 
+		# This shound check what type of object we are and handle collision properly (spell-to-actor comes to mind)
+		# for now it is a dirty hack for player (who is not-sentient and without ai!) to attact anything sentient and fighter-like!
+		if (not self.fighter is None) and (not obj.fighter is None) and (obj.ai is None) and (not obj is self):
 			self.fighter.attack(obj)
 
 	def step_towards(self, target_x, target_y):
