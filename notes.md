@@ -6,17 +6,29 @@
 
 ## Design
 
+* look at mapobjects in tome
 
 ### Objects
 
 Sort out objects, inheritance and components. There clearly should be:
-	
-* rename object to entity
-* entity – any item, lever or creture in-game. Can be added-to map (x, y coords). Can return its kind (actor, item, e.t.c). Has character and name. Has color. Can each map hold a list of entities in it? And world later overall list of entities?
-* actor (entity) – entity that can act (has ai), move and have *stats* through component snap-ons (hp, defense, etc.)
-* item (entity) – thing that can be *used* and *carried around*, but doesn't act on its own.
 
-Player and orc are actors, axe and chainmail are items. 
+* entity – any item, lever or creture in-game. 
+	* Can be added-to map (x, y, coords, blocking). Use map_object thing for that?
+	* Can return its kind (actor, item, e.t.c). 
+	* Has character and name. Has color. 
+	* Can each map hold a list of entities in it? And world later an overall list of entities?
+* actor (entity) – entity that can act
+	* must have ai addon
+	* can have *stats* dict (hp, defense, etc.) these are loaded from premades, i think
+	* can take turns (act) - engine goes over every entity in zone and calls its act method (if it is actor, ignore otherwise).
+	* can move on itself around the level
+	* can deal and receive damage
+* item (entity) – thing that can be *used* and *carried around*, but doesn't act on its own.
+	* this has to wait until inventory system
+	* stacks
+	* item that flies around the level? no such thing. Maybe create a projectile class eventually.
+* ai component
+	* must be called from actor's act
 
 ### Refactor
 
