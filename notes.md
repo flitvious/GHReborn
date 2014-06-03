@@ -30,12 +30,10 @@ Sort out objects, inheritance and components. There clearly should be:
 * ai component
 	* must be called from actor's act
 
-### Refactor
+TODO:
 
-* player is a kind of ai that is handled by player input from main.
-* Ai-handling routine. For each object in zone that has ai: if that is controlled by ai=player, take input and act. Something like that. player.take_turn should do that.
-* aww, rename take_turn to act. Call act for each entity type based on its kind (for now if it is actor, but there may be sentient items!)
-* snapons with entity's .extend method that is overriden in children accordingly.
+* each turn call act(AIData) on every actor in the map (check entity type)
+* propagate new generation methods to zone and main (also zone's entity_at and object list!)
 
 ### Attacking/damage
 
