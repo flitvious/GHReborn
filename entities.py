@@ -164,9 +164,11 @@ class Actor(Entity):
 		# this should check for factions )
 		# FIXME: attacking should be handled inside player! here only spontaneous collisions!
 		# works only for actors.
-		if (ent.get_type == Entity.types.Actor):
+		logger.log(logger.types.movement, "Bump called for " + self.name + " and " + ent.name)
+		
+		if (ent.get_type() == Entity.types.Actor):
 			# if player, attack any monster
-			if (self.ai.get_type() == AI.ais.player_control) and (ent.ai.get_type == AI.ais.basic_monster):
+			if (self.ai.get_type() == AI.ais.player_control) and (ent.ai.get_type() == AI.ais.basic_monster):
 				self.attack(ent)
 
 	def take_damage(self, damage):

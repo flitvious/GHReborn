@@ -12,7 +12,7 @@ SHOW_MOVEMENT = False
 SHOW_LEVEL_GEN = False
 SHOW_RENDERING = False
 SHOW_COMBAT = True
-SHOW_AI = True
+SHOW_AI = False
 
 
 # error log switch

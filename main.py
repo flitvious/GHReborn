@@ -9,7 +9,7 @@ import renderer
 from keyhandler import KeyHandler as k
 
 class Engine:
-	"""GHreborn Engine"""	
+	"""GHreborn Engine"""
 
 	def __init__(self):
 
