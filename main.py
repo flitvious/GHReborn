@@ -81,7 +81,7 @@ class Engine:
 						logger.log(logger.types.ai, 'Actor ' + ent.name + 'could not act')
 				
 
-	def redraw():
+	def redraw(self):
 		"""Redraw for main loop"""
 		# recompute fov for player position
 		self.fov.recompute(self.player.x, self.player.y)

@@ -87,5 +87,5 @@ class KeyHandler:
 			return KeyHandler.game.other
 
 	def wait_for_key(self):
-	"""wait for a key and return it"""
+		"""wait for a key and return it"""
 		return libtcod.console_wait_for_keypress(True) 

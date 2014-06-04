@@ -173,7 +173,7 @@ class Actor(Entity):
 		"""apply damage if possible"""
 		if damage > 0:
 			self.stats['hp'] -= damage
-			logger.log(logger.types.combat, self.name + ' now has ' + str(self.stats['hp']) + ' hp of ' + str(self.stats['hp_max']))
+			logger.log(logger.types.combat, self.name + ' now has ' + str(self.stats['hp']) + ' hp of ' + str(self.stats['max_hp']))
 
 	def attack(self, target):
 		"""
@@ -214,7 +214,7 @@ class AI:
 	def work(self):
 		"""
 		Returns True if this Actor's turn is made.
-		сhildren should redefine this
+		children should redefine this
 		"""
 		raise NotImplementedError("Subclass must implement abstract method")
 
