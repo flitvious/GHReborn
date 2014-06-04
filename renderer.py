@@ -47,7 +47,7 @@ class Renderer:
 	
 	# Below things are strongly map-related. Should be separated into a Mapper class that calls renderer per-tile or something
 
-	def process_zone(self, zone, fov_map):
+	def explore_and_render_zone(self, zone, fov_map):
 		"""Renders lit and unlit zone tiles and explores them"""	
 		# renderer exploring = bad, fix this 
 		for y in range(zone.height):
@@ -74,32 +74,32 @@ class Renderer:
 					if not zone[x][y].explored:
 						zone[x][y].explored = True
 
-	def show_all(self, zone, objects):
-		"""Cheat function: show all the tiles in a zone."""
+	def show_all(self, zone, entities):
+		"""Cheat function: show all the tiles and entities in a zone."""
 		# this repeats process_zone and render_objects, fix this somehow
 		for y in range(zone.height):
 			for x in range(zone.width):
 				wall = zone[x][y].block_sight
 				if wall:
-					libtcod.console_set_char_background(self.con, x, y, COLOR_WALL_LIT, libtcod.BKGND_SET)
+					libtcod.console_set_char_background(self.con, x, y, COLOR_WALL_DARK, libtcod.BKGND_SET)
 				else:
-					libtcod.console_set_char_background(self.con, x, y, COLOR_GROUND_LIT, libtcod.BKGND_SET)
-		for obj in objects:
-			libtcod.console_set_default_foreground(self.con, obj.color)
-			libtcod.console_put_char(self.con, obj.x, obj.y, obj.char, libtcod.BKGND_NONE)
+					libtcod.console_set_char_background(self.con, x, y, COLOR_GROUND_DARK, libtcod.BKGND_SET)
+		for ent in entities:
+			libtcod.console_set_default_foreground(self.con, ent.color)
+			libtcod.console_put_char(self.con, ent.x, ent.y, ent.char, libtcod.BKGND_NONE)
 
-	def render_objects(self, objects, fov_map):
-		"""Renders all objects"""
-		for obj in objects:
-			if libtcod.map_is_in_fov(fov_map, obj.x, obj.y):
+	def render_entities(self, entities, fov_map):
+		"""Renders all passed entities"""
+		for ent in entities:
+			if libtcod.map_is_in_fov(fov_map, ent.x, ent.y):
 				#render only visible objects
-				libtcod.console_set_default_foreground(self.con, obj.color)
-				libtcod.console_put_char(self.con, obj.x, obj.y, obj.char, libtcod.BKGND_NONE)
+				libtcod.console_set_default_foreground(self.con, ent.color)
+				libtcod.console_put_char(self.con, ent.x, ent.y, ent.char, libtcod.BKGND_NONE)
 
-	def clear_objects(self, objects):
-		"""Clears all objects"""
-		for obj in objects:
-			libtcod.console_put_char(self.con, obj.x, obj.y, ' ', libtcod.BKGND_NONE)
+	def clear_entities(self, entities):
+		"""Clears all entities"""
+		for ent in entities:
+			libtcod.console_put_char(self.con, ent.x, ent.y, ' ', libtcod.BKGND_NONE)
 
 class Fov:
 	"""Fov map wrapper"""	

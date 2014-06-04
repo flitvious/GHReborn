@@ -3,178 +3,126 @@
 import libtcodpy as libtcod
 import logger
 import enums
-import objects
+import entities
 import zone
 import renderer
+from keyhandler import KeyHandler as k
 
-class Application:
-	"""GHreborn main application"""	
+class Engine:
+	"""GHreborn Engine"""	
 
 	def __init__(self):
-		
-		# these should be static, but I don't care since application has one instance.		
-		# states
-		self.states = enums.enum('playing', 'pause')
-		self.state = self.states.playing
-
-		# possible human player actions
-		self.actions = enums.enum('exit', 'no_turn', 'move')
 
 		# init the renderer
 		self.renderer = renderer.Renderer(screen_width=80, screen_height=50, fps_limit=20)
+
+		# init the input
+		self.keyhandler = k() #keyhandler.KeyHandler()
 
 		# init the map
 		self.zone = zone.Zone()
 		# populate zone with roomer algorithm
 		self.zone.roomer(max_rooms=30)
+		
 		# init fov
 		self.fov = renderer.Fov(algo=0, light_walls=True, light_radius=10)
 		
 		# load zone information to fov
 		self.fov.read_zone(self.zone)
 		
-		# create a player object and make him a fighter
-		self.player = objects.Object('@', 'player', libtcod.white, 
-			blocks=True, 
-			fighter=objects.Fighter(hp=30, defense=2, power=5)
-			)
+		# create a player object in the zone and make him a fighter
+		self.player = entities.Actor('@', 'player', libtcod.white, blocks=True, 
+			design=entities.Actor.designs.player, ai=entities.AI.ais.player_control)
 		
 		# put player to random coords inside the zone
-		self.zone.add_object(self.player)
+		self.zone.add_entity(self.player)
 
-
-	def handle_keys(self, key):
-		"""
-		Handle input from the main loop.
-		"""
-
-		def handle_movement():
-			moved = False
-
-			if libtcod.console_is_key_pressed(libtcod.KEY_UP) or libtcod.console_is_key_pressed(libtcod.KEY_KP8):
-				moved = True
-				dx = 0
-				dy = -1
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN) or libtcod.console_is_key_pressed(libtcod.KEY_KP2):
-				moved = True
-				dx = 0
-				dy = 1
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT) or libtcod.console_is_key_pressed(libtcod.KEY_KP4):
-				moved = True
-				dx = -1
-				dy = 0
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT) or libtcod.console_is_key_pressed(libtcod.KEY_KP6):
-				moved = True
-				dx = 1
-				dy = 0
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_KP7):
-				moved = True
-				dx = -1
-				dy = -1
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_KP9):
-				moved = True
-				dx = 1
-				dy = -1
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_KP1):
-				moved = True
-				dx = -1
-				dy = 1
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_KP3):
-				moved = True
-				dx = 1
-				dy = 1
-
-			elif libtcod.console_is_key_pressed(libtcod.KEY_KP5) or libtcod.console_is_key_pressed(libtcod.KEY_5):
-				moved = True
-				dx = 0
-				dy = 0
+	def loop(self):
+		"""Endless loop"""
+		while not self.renderer.is_closed():
 			
-			if moved:
-				# move the PC
-				self.player.move(dx, dy)
-				# return 'moved'
-				return self.actions.move
-			else:
-				# return 'no turn taken'
-				return self.actions.no_turn
+			# make renderer redraw the screen
+			self.redraw()
+			
+			#build dict for act() method
+			act_data = dict(player=self.player, fov_map=self.fov.map)
 
+			# iterate over all entities in the zone
+			for ent in self.zone.entities:
+				
+				if ent is self.player:
+					# player is a special case!
 
-		if key.vk == libtcod.KEY_ENTER and key.lalt:
-			#Alt+Enter: toggle fullscreen
+					# player_made_turn is determined in ai (failed, cancelled skills and free retries, etc)
+					player_made_turn = False
+					
+					while not player_made_turn:
+
+						# wait for some input
+						key = self.keyhandler.wait_for_key()
+
+						# process controls
+						# these will overlay any game action bound for the same key
+						self.process_control_actions(action=self.keyhandler.process_control_keys(key))
+						# process cheats
+						# these will overlay any game action bound for the same key
+						self.process_cheat_actions(action=self.keyhandler.process_cheat_keys(key))
+
+						# get player's action
+						act_data['player_action'] = self.keyhandler.process_game_key(key)
+						
+						# feed action to Actor.
+						# if player didn't do any game action, repeat.
+						player_made_turn = ent.act(act_data)
+				else:
+					# not player, regular mook
+					result = ent.act(act_data)
+					if result is False:
+						logger.log(logger.types.ai, 'Actor ' + ent.name + 'could not act')
+				
+
+	def redraw():
+		"""Redraw for main loop"""
+		# recompute fov for player position
+		self.fov.recompute(self.player.x, self.player.y)
+		# render and explore the zone
+		self.renderer.explore_and_render_zone(self.zone, self.fov.map)
+		# render all objects in the zone
+		self.renderer.render_entities(self.zone.entities, self.fov.map)
+		# blit out drawing buffer
+		self.renderer.blit_con()
+		# flush the console
+		self.renderer.flush()
+		# clear the objects
+		self.renderer.clear_entities(self.zone.entities)
+		
+	def process_control_actions(self, action):
+		"""Run logic for control actions"""
+		if action == k.controls.none or action == k.controls.other:
+			pass
+		elif action == k.controls.exit:
+			quit(0)
+		elif action == k.controls.fullscreen:
 			self.renderer.toggle_fullscreen()
 
-		elif key.vk == libtcod.KEY_ESCAPE:
-			#exit game
-			return self.actions.exit
-
-		# cheats/debug
-		elif key.vk == libtcod.KEY_1 and key.lctrl:
-			logger.log(logger.types.cheats, "teleporting randomly")
+	def process_cheat_actions(self, action):
+		"""Run logic for cheat actions"""
+		if action == k.cheats.teleport:
+			logger.log(logger.types.cheats, "teleporting")
 			self.player.x, self.player.y = self.zone.random_valid_coords()
-
-		elif key.vk == libtcod.KEY_2 and key.lctrl:
-			logger.log(logger.types.cheats, "exploring all map")
-			self.renderer.show_all(self.zone, self.zone.objects)
-		
-		#player movement, works only if playing
-		if self.state == self.states.playing:
-			action = handle_movement()
-			
-			#if player did something, let monsters take their turn
-			if action != self.actions.no_turn:
-				for obj in self.zone.objects:
-					# if not player, act
-					if not obj is self.player:
-						#if has some ai, take turn
-						if not obj.ai is None:
-							#logger.log(logger.types.ai, "calling ai.take_turn for " + obj.name)
-							obj.ai.take_turn(fov_map=self.fov.map, player=self.player)
-			# return the action (check that player didin't choose to exit)
-			return action
+			self.redraw()
+		elif action == k.cheats.reveal_map:
+			logger.log(logger.types.cheats, "exploring all the map")
+			self.renderer.show_all(self.zone, self.zone.entities)
+			self.redraw()
 
 def main():
-	"""App init and main loop"""
+	"""Engine init and main loop"""
 	# init the new app!
-	app = Application()
-
-	# the main loop
-	while not app.renderer.is_closed():
-		# recompute fov for player position
-		app.fov.recompute(app.player.x, app.player.y)
-		# render and explore the zone
-		app.renderer.process_zone(app.zone, app.fov.map)
-		# render all objects in the zone
-		app.renderer.render_objects(app.zone.objects, app.fov.map)
-		# show stats
-		logger.game("Player's health is " + str(app.player.fighter.hp) + " of " + str(app.player.fighter.max_hp))
-		# blit out drawing buffer
-		app.renderer.blit_con()
-		# flush the console
-		app.renderer.flush()
-		# clear the objects
-		app.renderer.clear_objects(app.zone.objects)
-		
-		#handle keys and exit game if needed
-		# libtcod 1.5.1 has this bugged and working twice, use 1.5.2!
-		#key = libtcod.console_check_for_keypress()
-		key = libtcod.console_wait_for_keypress(True)
-		
-		action = app.handle_keys(key)
-		# logger stuff
-		logger.log(logger.types.input, "Handle keys returned " + app.actions.reverse_mapping[action])
-		if action == app.actions.exit:
-			break
+	engine = Engine()
+	# enter endless loop
+	engine.loop()
 
 if __name__ == '__main__':
 	main()
-
-
-
 

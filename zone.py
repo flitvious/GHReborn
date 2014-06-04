@@ -1,6 +1,6 @@
 import libtcodpy as libtcod
 import logger
-import objects
+import entities
 
 class Tile:
 	"""a tile of the map and its properties"""
@@ -46,7 +46,7 @@ class Zone:
 		self.height = height
 		#map starts with all tiles "blocked"
 		self.cells = [[Tile(blocked=True) for y in range(self.height)] for x in range(self.width)]
-		self.objects = []
+		self.entities = []
 
 	def __getitem__(self, index):
 		"""
@@ -56,15 +56,15 @@ class Zone:
 		# zone[x][y] means zone.__getitem__(x).__getitem__(y) which does the trick
 		return self.cells[index]
 
-	def add_object(self, obj, x=None, y=None):
-		""" Add an object to the zone's list of objects at specified coords. If both coords are not set, random coords are picked"""
+	def add_entity(self, ent, x=None, y=None):
+		""" Add an entity to the zone's list of objects at specified coords. If both coords are not set, random coords are picked"""
 		
 		# if both coords aren't set, use random
 		if x is None or y is None:
 			x, y = self.random_valid_coords()
 
-		obj.set_zone(self, x, y)
-		self.objects.append(obj)
+		ent.set_zone(self, x, y)
+		self.entities.append(ent)
 		#objects[-1] - last added 
 
 	def random_valid_coords(self, max_tries=50):
@@ -92,19 +92,19 @@ class Zone:
 			return True
 
 		# now check for any blocking objects
-		for obj in self.objects:
-			if obj.blocks and obj.x == x and obj.y == y:
-				logger.log(logger.types.movement, "Tile is blocked (by " + obj.name + ")" )
+		for ent in self.entities:
+			if ent.blocks and ent.x == x and ent.y == y:
+				logger.log(logger.types.movement, "Tile is blocked (by " + ent.name + ")" )
 				return True
 		
 		logger.log(logger.types.movement, "Tile is not blocked!")
 		return False
 
-	def object_at(self, x, y):
-		"""Returns the object at coords or None"""
-		for obj in self.objects:
-			if obj.x == x and obj.y == y:
-				return obj
+	def entity_at(self, x, y):
+		"""Returns the entity at coords or None"""
+		for ent in self.entities:
+			if ent.x == x and ent.y == y:
+				return ent
 		return None
 
 	######## Roomer part, make a different class of it eventually and call from zone class! ##########
@@ -127,20 +127,14 @@ class Zone:
 					#80% chance of getting an orc
 					if libtcod.random_get_int(0, 0, 100) < 80:
 						#create an orc
-						obj = objects.Object('o', 'orc', libtcod.desaturated_green, 
-							blocks=True,
-							fighter=objects.Fighter(hp=10, defense=2, power=5),
-							ai=objects.BasicMonster()
-							)
-						self.add_object(obj, x, y)
+						obj = entities.Actor('o', 'orc', libtcod.desaturated_green, blocks=True,
+							design=entities.Actor.designs.orc, ai=entities.AI.ais.basic_monster)
+						self.add_entity(obj, x, y)
 					else:
 						#create a troll
-						obj = objects.Object('T', 'troll', libtcod.darker_green,
-							blocks=True,
-							fighter=objects.Fighter(hp=16, defense=1, power=4),
-							ai=objects.BasicMonster()
-							)
-						self.add_object(obj, x, y)
+						obj = entities.Actor('T', 'troll', libtcod.darker_green, blocks=True,
+							design=entities.Actor.designs.troll, ai=entities.AI.ais.basic_monster)
+						self.add_entity(obj, x, y)
 
 		def has_intersections(candidate):
 			"""run through the existing rooms and see if they intersect with the candidate"""

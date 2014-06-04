@@ -3,37 +3,34 @@
 * libtcode zip should be integraed properly (subfolders at least), cheap stuff for now
 * Sort out fov_maps. Ae they per-object or single for player only?
 * properly implement color constants inside the renderer
+* todo - incapsulate all the damn properties and access through methods. Even `zone[x][y]` stuff. Incapsulate stats.
+* fix cheats.. aaaaw, to hell with this :)
+* step towards energy - per-entity rendering
+* remove map-related stuff from renderer and create mapper
+* move player-related bump functionality to player ai
+* error handling - use raise everywhere
+* distance calculation is shit, fix it with nice pathfinding algorithms.
 
 ## Design
 
-* look at mapobjects in tome
+### Extending
+
+Extension modules may be passed as **kwargs as many as needed
 
 ### Objects
 
 Sort out objects, inheritance and components. There clearly should be:
 
 * entity – any item, lever or creture in-game. 
-	* Can be added-to map (x, y, coords, blocking). Use map_object thing for that?
-	* Can return its kind (actor, item, e.t.c). 
-	* Has character and name. Has color. 
-	* Can each map hold a list of entities in it? And world later an overall list of entities?
 * actor (entity) – entity that can act
-	* must have ai addon
 	* can have *stats* dict (hp, defense, etc.) these are loaded from premades, i think
-	* can take turns (act) - engine goes over every entity in zone and calls its act method (if it is actor, ignore otherwise).
-	* can move on itself around the level
-	* can deal and receive damage
 * item (entity) – thing that can be *used* and *carried around*, but doesn't act on its own.
 	* this has to wait until inventory system
 	* stacks
 	* item that flies around the level? no such thing. Maybe create a projectile class eventually.
+
 * ai component
 	* must be called from actor's act
-
-TODO:
-
-* each turn call act(AIData) on every actor in the map (check entity type)
-* propagate new generation methods to zone and main (also zone's entity_at and object list!)
 
 ### Attacking/damage
 
